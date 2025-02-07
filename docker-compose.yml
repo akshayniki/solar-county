@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: ./php
+    container_name: solar-php
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - ci4-network
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: solar-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - .:/var/www/html
+    depends_on:
+      - php
+    restart: always
+    networks:
+      - ci4-network
+
+  db:
+    image: mysql:5.7
+    container_name: solar-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: solar
+      MYSQL_USER: solar
+      MYSQL_PASSWORD: solar
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - ci4-network
+
+networks:
+  ci4-network:
+
+volumes:
+  db_data:
